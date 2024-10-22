@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "664999446135",
+    "project_id": "connect-event-67b51",
+    "storage_bucket": "connect-event-67b51.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:664999446135:android:386e299c75e556eee06872",
+        "android_client_info": {
+          "package_name": "com.example.fluttercheckin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCA6TKxNjyHCYI-w74eC-N6_ORyoeVCAWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
