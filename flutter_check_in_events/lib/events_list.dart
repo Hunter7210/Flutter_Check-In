@@ -53,15 +53,17 @@ class _MyListEventsPageState extends State<MyListEventsPage> {
             itemCount: events.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(events[index].nome), // Exiba o nome do evento
-                subtitle: Text(events[index].data), // Exiba a data do evento
+                title: Text(events[index].nome),
+                subtitle: Text(events[index].data),
                 onTap: () {
-                  // Navegar para MyEventsPage com o ID do evento
+                  // Navegar para MyEventsPage com o objeto do evento
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => MyEventsPage(
-                          idEvent: events[index].id), // Passa o ID do evento
+                        event:
+                            events[index], // Passa o objeto do evento completo
+                      ),
                     ),
                   );
                 },
