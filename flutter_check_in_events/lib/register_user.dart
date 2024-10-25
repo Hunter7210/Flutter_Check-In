@@ -68,50 +68,130 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text("Cadastro de Usuário"),
-          backgroundColor: Colors.blueAccent),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: _nomeController,
-                decoration: const InputDecoration(labelText: "Nome"),
-              ),
-              TextField(
-                controller: _dataNascimentoController,
-                decoration:
-                    const InputDecoration(labelText: "Data de Nascimento"),
-              ),
-              TextField(
-                controller: _cpfController,
-                decoration: const InputDecoration(labelText: "CPF"),
-              ),
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: "Email"),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: "Senha"),
-                obscureText: true,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _register,
-                child: const Text(
-                    "Registrar Usuário"), // Alterado o texto do botão
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent, // Cor do botão
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                  textStyle: TextStyle(fontSize: 18),
-                ),
+        title: const Text("Cadastro de Usuário"),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Center(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.85, // Responsividade
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9), // Fundo com transparência
+            borderRadius: BorderRadius.circular(20.0), // Cantos arredondados
+            boxShadow: [
+              const BoxShadow(
+                color: Colors.black26,
+                blurRadius: 10,
+                offset: Offset(0, 4),
               ),
             ],
           ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.person_add,
+                    size: 80.0, color: Colors.blueAccent),
+                const SizedBox(height: 30),
+                const Text(
+                  "Crie sua conta",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(_nomeController, "Nome Completo"),
+                _buildTextField(
+                  _dataNascimentoController,
+                  "Data de Nascimento",
+                  keyboardType: TextInputType.datetime,
+                ),
+                _buildTextField(_cpfController, "CPF",
+                    keyboardType: TextInputType.number),
+                _buildTextField(
+                  _emailController,
+                  "Email",
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                _buildTextField(
+                  _passwordController,
+                  "Senha",
+                  obscureText: true,
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _register,
+                  child: const Text("Registrar Usuário"),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blueAccent,
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    textStyle: const TextStyle(fontSize: 18),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Já possui uma conta?",
+                      style: TextStyle(color: Colors.black87),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyLoginPage()),
+                        );
+                      },
+                      child: const Text(
+                        "Faça Login",
+                        style: TextStyle(color: Colors.blueAccent),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
+      ),
+    );
+  }
+
+  // Método para construir um campo de texto
+  Widget _buildTextField(TextEditingController controller, String label,
+      {bool obscureText = false,
+      TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.grey[200],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15), // Cantos arredondados
+            borderSide: BorderSide(color: Colors.blueAccent),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(color: Colors.blueAccent, width: 2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+        ),
+        obscureText: obscureText,
+        keyboardType: keyboardType,
       ),
     );
   }

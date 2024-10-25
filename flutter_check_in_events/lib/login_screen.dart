@@ -1,16 +1,14 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_check_in_events/events_list.dart';
+import 'package:flutter_geolocalizacao_1/CadastroUsuarioPage.dart';
 
 class MyLoginPage extends StatefulWidget {
-  const MyLoginPage({super.key});
+  const MyLoginPage({Key? key}) : super(key: key);
 
   @override
   State<MyLoginPage> createState() => _MyLoginPageState();
 }
 
 class _MyLoginPageState extends State<MyLoginPage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
@@ -20,36 +18,6 @@ class _MyLoginPageState extends State<MyLoginPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _login() async {
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                MyListEventsPage(idUsu: userCredential.user!.uid)),
-      );
-
-      print("Usuário logado: ${userCredential.user}");
-    } on FirebaseAuthException catch (e) {
-      print("Erro: ${e.message}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Erro ao fazer login')),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -133,7 +101,13 @@ class _MyLoginPageState extends State<MyLoginPage> {
                   ),
                   const SizedBox(height: 20),
                   TextButton(
-                    onPressed: _login,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => CadastroUsuarioPage()),
+                      );
+                    },
                     child: const Text.rich(
                       TextSpan(
                         text: "Ainda não tem uma conta? ",
@@ -190,5 +164,9 @@ class _MyLoginPageState extends State<MyLoginPage> {
       obscureText: obscureText,
       keyboardType: keyboardType,
     );
+  }
+
+  Future<void> _login() async {
+    // Implementar a lógica de login aqui
   }
 }

@@ -4,8 +4,9 @@ import 'package:flutter_check_in_events/events_list.dart';
 
 class MyEventsPage extends StatefulWidget {
   final Event event;
+  final String partiId;
 
-  const MyEventsPage({super.key, required this.event});
+  const MyEventsPage({super.key, required this.event, required this.partiId});
 
   @override
   State<MyEventsPage> createState() => _MyEventsPageState();
@@ -27,13 +28,15 @@ class _MyEventsPageState extends State<MyEventsPage> {
         'HorarioCheck': DateTime.now().toString(),
         'StatusCheck': 'Registrado',
         'LocalizacaoAtualCheck': '123',
-        'idUsu': '2YYY0ow09jfmM79LlaC3zMdh0142',
+        'idUsu': widget.partiId,
       };
 
       // Adiciona um novo documento com os dados fictícios na subcoleção Check-in
       await _firestore
           .collection('Evento')
           .doc(eventId)
+          /* .collection('Participantes')
+          .doc(widget.partiId) */
           .collection('Check-in')
           .add(fictitiousCheckInData);
 
