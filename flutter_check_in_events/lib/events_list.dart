@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_check_in_events/events.dart';
 import 'package:flutter_check_in_events/events_details.dart';
 
 class MyListEventsPage extends StatefulWidget {
@@ -212,7 +211,7 @@ class Event {
       nome: data['NomeEvent'] ?? 'Evento sem nome',
       descricao: data['DescricaoEvent'] ?? 'Sem descrição',
       data: data['DataHoraEvent'] ?? 'Data não disponível',
-      local: data['LocalEvent'] ?? 'Local não especificado',
+      local: data['LocalizacaoEvent'] ?? 'Local não especificado',
       status: data['StatusEvent'] ?? 'Status não disponível',
     );
   }

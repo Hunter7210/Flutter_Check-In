@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_check_in_events/login_screen.dart';
+import 'package:flutter_check_in_events/login_user.dart';
 import 'package:flutter_check_in_events/register_user.dart';
 
 class HomeScreen extends StatelessWidget {

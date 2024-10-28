@@ -28,7 +28,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
         'NomeUsuario': 'Usuário Exemplo',
         'HorarioCheck': DateTime.now().toString(),
         'StatusCheck': 'Registrado',
-        'LocalizacaoAtualCheck': '123',
+        'LocalizacaoAtualCheck': '',
         'idUsu': widget.partiId,
       };
 
