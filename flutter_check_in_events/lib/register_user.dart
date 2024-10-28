@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_check_in_events/login_user.dart';
 
 class CadastroUsuarioPage extends StatefulWidget {
+  const CadastroUsuarioPage({super.key});
+
   // Nome alterado
   @override
   _CadastroUsuarioPageState createState() => _CadastroUsuarioPageState();
@@ -47,7 +49,7 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
       // Navegar para a tela de login
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MyLoginPage()),
+        MaterialPageRoute(builder: (context) => const MyLoginPage()),
       );
     } on FirebaseAuthException catch (e) {
       print("Erro ao registrar usuário: ${e.message}");
@@ -78,8 +80,8 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.9), // Fundo com transparência
             borderRadius: BorderRadius.circular(20.0), // Cantos arredondados
-            boxShadow: [
-              const BoxShadow(
+            boxShadow: const [
+              BoxShadow(
                 color: Colors.black26,
                 blurRadius: 10,
                 offset: Offset(0, 4),
@@ -127,7 +129,8 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: Colors.blueAccent,
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
@@ -147,7 +150,7 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => MyLoginPage()),
+                              builder: (context) => const MyLoginPage()),
                         );
                       },
                       child: const Text(
@@ -179,15 +182,15 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
           fillColor: Colors.grey[200],
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15), // Cantos arredondados
-            borderSide: BorderSide(color: Colors.blueAccent),
+            borderSide: const BorderSide(color: Colors.blueAccent),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(color: Colors.blueAccent, width: 2),
+            borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(color: Colors.grey),
+            borderSide: const BorderSide(color: Colors.grey),
           ),
         ),
         obscureText: obscureText,

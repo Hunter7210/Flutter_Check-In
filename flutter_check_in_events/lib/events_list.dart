@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';;
+import 'package:flutter/material.dart';
 import 'package:flutter_check_in_events/events.dart';
-
+import 'package:flutter_check_in_events/events_details.dart';
 
 class MyListEventsPage extends StatefulWidget {
   final String idUsu;
@@ -171,7 +171,7 @@ class EventCard extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MY(
+                  builder: (context) => MyEventDetailsScreen(
                     event: event, // O evento deve ser uma instância de Event
                     partiId:
                         idUsu, // Certifique-se de que idUsu está corretamente definido
@@ -179,7 +179,7 @@ class EventCard extends StatelessWidget {
                 ),
               );
             },
-            child: Text('Ver Detalhes'),
+            child: const Text('Ver Detalhes'),
           ),
         ],
       ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_check_in_events/login_screen.dart';
+import 'package:flutter_check_in_events/register_user.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -38,7 +40,8 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => C()),
+                        MaterialPageRoute(
+                            builder: (context) => const CadastroUsuarioPage()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -60,7 +63,8 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => MyLoginPAGE()),
+                        MaterialPageRoute(
+                            builder: (context) => const MyLoginPage()),
                       );
                     },
                     style: ElevatedButton.styleFrom(

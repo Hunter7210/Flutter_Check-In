@@ -62,12 +62,14 @@ flutter:
 
   assets:
     - assets/logo.png
-    - assets/banner.PNG
+    - assets/banner.png
     - assets/event1.png
-    - assets/event2.jpg
-    - assets/event3.webp
+    - assets/event2.png
+    - assets/event3.png
     - assets/event4.png
-    - assets/fundo.jpg
+    - assets/fundo.png
+  
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_geolocalizacao_1/CadastroUsuarioPage.dart';
+import 'package:flutter_check_in_events/register_user.dart';
 
 class MyLoginPage extends StatefulWidget {
   const MyLoginPage({Key? key}) : super(key: key);
@@ -105,7 +105,7 @@ class _MyLoginPageState extends State<MyLoginPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => CadastroUsuarioPage()),
+                            builder: (context) => const CadastroUsuarioPage()),
                       );
                     },
                     child: const Text.rich(
