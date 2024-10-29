@@ -34,7 +34,6 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
           desiredAccuracy: LocationAccuracy.high);
       LatLng userLocation = LatLng(position.latitude, position.longitude);
 
-      // Convertendo a localização do evento, assumindo que widget.event.local é uma string no formato "latitude,longitude"
       LatLng eventLocation = _parseLocation(widget.event.local);
 
       double distanceInMeters = _calculateDistance(userLocation, eventLocation);
@@ -142,6 +141,13 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Adicionando a imagem do evento aqui
+                  Image.network(
+                    widget.event.image, // URL da imagem
+                    fit: BoxFit.cover, // Ajusta a imagem para cobrir o espaço
+                    width: double.infinity, // Largura total
+                    height: 200, // Altura da imagem
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     widget.event.nome,
