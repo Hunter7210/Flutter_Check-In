@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_check_in_events/events_list.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 
 class MyEventDetailsScreen extends StatefulWidget {
   final Event event;
   final String partiId;
 
-  const MyEventDetailsScreen(
-      {super.key, required this.event, required this.partiId});
+  const MyEventDetailsScreen({
+    super.key,
+    required this.event,
+    required this.partiId,
+  });
 
   @override
   State<MyEventDetailsScreen> createState() => _MyEventDetailsScreenState();
@@ -15,45 +20,105 @@ class MyEventDetailsScreen extends StatefulWidget {
 
 class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool _isLoading = false; // Adiciona um estado de loading
+  bool _isLoading = false;
 
-  Future<void> _createFictitiousCheckIn(String eventId) async {
+  Future<void> _getUserLocationAndCheckIn() async {
+    if (!await _checkLocationPermissions()) return;
+
     setState(() {
-      _isLoading = true; // Ativa o loading
+      _isLoading = true;
     });
 
     try {
-      // Dados fictícios para o Check-in
-      Map<String, dynamic> fictitiousCheckInData = {
-        'NomeUsuario': 'Usuário Exemplo',
-        'HorarioCheck': DateTime.now().toString(),
-        'StatusCheck': 'Registrado',
-        'LocalizacaoAtualCheck': '',
-        'idUsu': widget.partiId,
-      };
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      LatLng userLocation = LatLng(position.latitude, position.longitude);
 
-      // Adiciona um novo documento com os dados fictícios na subcoleção Check-in
-      await _firestore
-          .collection('Evento')
-          .doc(eventId)
-          /* .collection('Participantes')
-          .doc(widget.partiId) */
-          .collection('Check-in')
-          .add(fictitiousCheckInData);
+      // Convertendo a localização do evento, assumindo que widget.event.local é uma string no formato "latitude,longitude"
+      LatLng eventLocation = _parseLocation(widget.event.local);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Check-in fictício criado com sucesso!")),
-      );
+      double distanceInMeters = _calculateDistance(userLocation, eventLocation);
+
+      if (distanceInMeters <= 50) {
+        await _createFictitiousCheckIn(widget.event.id, userLocation);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Check-in realizado com sucesso!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  "Você está a ${distanceInMeters.toStringAsFixed(2)} metros do evento. Aproximar-se!")),
+        );
+      }
     } catch (e) {
-      print("Erro ao criar check-in fictício: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erro ao criar check-in fictício.")),
-      );
+      print("Erro ao obter localização do usuário: $e");
     } finally {
       setState(() {
-        _isLoading = false; // Desativa o loading
+        _isLoading = false;
       });
     }
+  }
+
+  LatLng _parseLocation(String locationString) {
+    List<String> parts = locationString.split(',');
+    double latitude = double.parse(parts[0].trim());
+    double longitude = double.parse(parts[1].trim());
+    return LatLng(latitude, longitude);
+  }
+
+  Future<void> _createFictitiousCheckIn(
+      String eventId, LatLng userLocation) async {
+    Map<String, dynamic> fictitiousCheckInData = {
+      'HorarioCheck': DateTime.now().toString(),
+      'StatusCheck': 'Registrado',
+      'LocalizacaoAtualCheck':
+          '${userLocation.latitude}, ${userLocation.longitude}',
+      'idUsu': widget.partiId,
+    };
+
+    await _firestore
+        .collection('Evento')
+        .doc(eventId)
+        .collection('Check-in')
+        .add(fictitiousCheckInData);
+  }
+
+  Future<bool> _checkLocationPermissions() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Serviço de localização desativado!")),
+      );
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Permissão de localização negada!")),
+        );
+        return false;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Permissão de localização permanentemente negada!")),
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  double _calculateDistance(LatLng userLocation, LatLng eventLocation) {
+    final Distance distance = Distance();
+    return distance(userLocation, eventLocation);
   }
 
   @override
@@ -65,12 +130,11 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Volta para a página anterior
+            Navigator.pop(context);
           },
         ),
       ),
       body: Stack(
-        // Usando Stack para sobrepor os widgets
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -78,36 +142,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Cartaz do evento com tamanho maior
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    /*    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        widget.event.imagem,
-                        height: 400, // Aumentando a altura do cartaz
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons
-                              .error); // Mostra um ícone de erro se a imagem não for carregada
-                        },
-                      ),
-                    ), */
-                  ),
-                  // Espaço entre o cartaz e as informações
-                  const SizedBox(height: 16), // Adicionado para criar espaço
-                  // Nome do evento
+                  const SizedBox(height: 16),
                   Text(
                     widget.event.nome,
                     style: const TextStyle(
@@ -115,28 +150,24 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  // Data e hora do evento
                   Text(
                     "Data e Hora: ${widget.event.data} ",
                     style: const TextStyle(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  // Localização do evento
                   Text(
                     "Localização: ${widget.event.local}",
                     style: const TextStyle(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  // Status do evento
                   Text(
                     "Status: ${widget.event.status}",
                     style: const TextStyle(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  // Descrição
                   const Text(
                     "Descrição:",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -147,21 +178,18 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                     widget.event.descricao,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(
-                      height:
-                          60), // Espaço aumentado para mover o botão mais para cima
+                  const SizedBox(height: 60),
                 ],
               ),
             ),
           ),
-          // Botão de Check-in posicionado no canto inferior direito
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
-              padding: const EdgeInsets.only(
-                  bottom: 100, right: 16.0), // Ajuste para elevar o botão
+              padding: const EdgeInsets.only(bottom: 100, right: 16.0),
               child: ElevatedButton(
-                onPressed: () => _createFictitiousCheckIn(widget.event.id),
+                onPressed:
+                    _isLoading ? null : () => _getUserLocationAndCheckIn(),
                 child: const Text('Fazer Check-in'),
                 style: ElevatedButton.styleFrom(
                   padding:

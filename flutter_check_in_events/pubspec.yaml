@@ -34,6 +34,11 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
+  
+  provider: ^6.1.2
+  geolocator: ^10.0.0
+  latlong2: ^0.8.1
+  flutter_map: ^4.0.0 
 
  
 
@@ -67,7 +72,7 @@ flutter:
     - assets/event2.png
     - assets/event3.png
     - assets/event4.png
-    - assets/fundo.png
+    - assets/fundo.jpg
   
 
 

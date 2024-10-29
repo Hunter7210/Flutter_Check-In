@@ -24,45 +24,52 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
   bool registro = false;
 
   Future<void> _register() async {
+    if (_emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _nomeController.text.isEmpty ||
+        _dataNascimentoController.text.isEmpty ||
+        _cpfController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, preencha todos os campos.')),
+      );
+      return;
+    }
+
     try {
-      // Criar um usuário no Firebase Authentication
+      setState(() => registro = true); // Exibe indicador de progresso
+
+      // Cria usuário no Firebase Authentication
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // Adicionar dados do usuário no Firestore
+      // Salva dados do usuário no Firestore
       await _firestore.collection('Usuario').doc(userCredential.user!.uid).set({
         'NomeUsu': _nomeController.text.trim(),
         'DataNascimentoUsu': _dataNascimentoController.text.trim(),
         'CPFUsu': _cpfController.text.trim(),
       });
 
-      setState(() {
-        registro =
-            true; // Atualiza o estado para indicar que o registro foi bem-sucedido
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuário registrado com sucesso!')),
+      );
 
-      print("Usuário registrado: ${userCredential.user}");
-
-      // Navegar para a tela de login
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MyLoginPage()),
       );
     } on FirebaseAuthException catch (e) {
-      print("Erro ao registrar usuário: ${e.message}");
-      // Exibir mensagem de erro para o usuário
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message ?? 'Erro ao registrar usuário')),
       );
     } catch (e) {
-      print("Erro desconhecido: $e");
-      // Exibir mensagem de erro para o usuário
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro desconhecido: $e')),
       );
+    } finally {
+      setState(() => registro = false); // Esconde indicador de progresso
     }
   }
 
