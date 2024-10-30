@@ -22,14 +22,15 @@ class MyEventDetailsScreen extends StatefulWidget {
 class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
-  bool _showMap = false;
-
+  bool _isInRange = false; // Variável para controlar o estado do range
   late LatLng eventLocation;
+  List<int> ratings = [];
 
   @override
   void initState() {
     super.initState();
     eventLocation = _parseLocation(widget.event.local);
+    _fetchRatings();
   }
 
   Future<void> _getUserLocationAndCheckIn() async {
@@ -43,14 +44,20 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       LatLng userLocation = LatLng(position.latitude, position.longitude);
-
       double distanceInMeters = _calculateDistance(userLocation, eventLocation);
 
-      if (distanceInMeters <= 50) {
+      setState(() {
+        _isInRange =
+            distanceInMeters <= 50; // Atualiza o estado baseado na distância
+      });
+
+      if (_isInRange) {
         await _createFictitiousCheckIn(widget.event.id, userLocation);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Check-in realizado com sucesso!")),
         );
+
+        await _waitForUserToExitRadius(userLocation);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -65,6 +72,83 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _waitForUserToExitRadius(LatLng initialLocation) async {
+    while (true) {
+      await Future.delayed(const Duration(seconds: 5));
+
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      LatLng userLocation = LatLng(position.latitude, position.longitude);
+      double distanceInMeters = _calculateDistance(userLocation, eventLocation);
+
+      setState(() {
+        _isInRange =
+            distanceInMeters <= 50; // Atualiza o estado baseado na distância
+      });
+
+      if (!_isInRange) {
+        _showRatingDialog();
+        break;
+      }
+    }
+  }
+
+  void _showRatingDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Avalie o Evento"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    icon: Icon(
+                      Icons.star,
+                      color: ratings.contains(index + 1)
+                          ? Colors.yellow
+                          : Colors.grey,
+                    ),
+                    onPressed: () {
+                      _saveRating(index + 1);
+                      Navigator.of(context).pop();
+                    },
+                  );
+                }),
+              ),
+              const SizedBox(height: 10),
+              Text("Avaliações:"),
+              for (var rating in ratings)
+                Text("⭐ ${rating.toString()} estrelas"),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _saveRating(int rating) async {
+    await FirebaseFirestore.instance
+        .collection('Evento')
+        .doc(widget.event.id)
+        .collection('Avaliacoes')
+        .add({'estrelas': rating});
+    _fetchRatings();
+  }
+
+  Future<void> _fetchRatings() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('Evento')
+        .doc(widget.event.id)
+        .collection('Avaliacoes')
+        .get();
+    ratings = snapshot.docs.map((doc) => doc['estrelas'] as int).toList();
+    setState(() {});
   }
 
   LatLng _parseLocation(String locationString) {
@@ -151,7 +235,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                 children: [
                   // Carrossel com imagem e mapa
                   Container(
-                    height: 250, // Altura do carrossel
+                    height: 250,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
@@ -166,7 +250,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                       borderRadius: BorderRadius.circular(12),
                       child: PageView(
                         controller: PageController(
-                          initialPage: _showMap ? 1 : 0,
+                          initialPage: 0,
                         ),
                         children: [
                           // Imagem do evento
@@ -209,7 +293,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                   ),
                   const SizedBox(height: 16),
                   Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    margin: const EdgeInsets.symmetric(vertical: 10),
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -220,94 +304,63 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.event.nome,
+                            'Nome: ${widget.event.nome}',
                             style: const TextStyle(
-                              fontSize: 28,
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                              color: Colors.blueAccent,
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.calendar_today, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Data: ${widget.event.data}",
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                            ],
+                          Text(
+                            'Descrição: ${widget.event.descricao}',
+                            style: const TextStyle(fontSize: 18),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Localização: ${widget.event.local}",
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                            ],
+                          Text(
+                            'Data e Hora: ${widget.event.data}',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.info, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Status: ${widget.event.status}",
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                            ],
+                          Text(
+                            'Localização: ${widget.event.local}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Status: ${widget.event.status}',
+                            style: const TextStyle(fontSize: 16),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Descrição:",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      widget.event.descricao,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 60),
                 ],
               ),
             ),
           ),
+          // Botão de check-in no canto inferior direito
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 100, right: 16),
-              child: ElevatedButton(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : _getUserLocationAndCheckIn,
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                  backgroundColor: const Color.fromARGB(255, 50, 211, 157),
-                  textStyle: const TextStyle(fontSize: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isLoading
+                icon: _isLoading
                     ? const CircularProgressIndicator(
                         color: Colors.white,
                       )
-                    : const Text('Fazer Check-in'),
+                    : const Icon(Icons.check),
+                label: const Text("Realizar Check-in"),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  backgroundColor:
+                      _isInRange ? Colors.green : Colors.red, // Mudança de cor
+                ),
               ),
             ),
           ),
