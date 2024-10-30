@@ -1,213 +1,226 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_check_in_events/events_list.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_check_in_events/events_details.dart';
+import 'package:flutter_check_in_events/user_profile_page.dart';
 
-class MyEventDetailsScreen extends StatefulWidget {
-  final Event event;
-  final String partiId;
+class MyListEventsPage extends StatefulWidget {
+  final String idUsu;
 
-  const MyEventDetailsScreen({
-    super.key,
-    required this.event,
-    required this.partiId,
-  });
+  const MyListEventsPage({super.key, required this.idUsu});
 
   @override
-  State<MyEventDetailsScreen> createState() => _MyEventDetailsScreenState();
+  State<MyListEventsPage> createState() => _MyListEventsPageState();
 }
 
-class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
+class _MyListEventsPageState extends State<MyListEventsPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool _isLoading = false;
+  late Future<List<Event>> _events;
 
-  Future<void> _getUserLocationAndCheckIn() async {
-    if (!await _checkLocationPermissions()) return;
+  @override
+  void initState() {
+    super.initState();
+    _events = _fetchEvents(); // Busca os eventos ao inicializar
+  }
 
-    setState(() {
-      _isLoading = true;
-    });
-
+  /* Metodo para rodar */
+  Future<List<Event>> _fetchEvents() async {
     try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      LatLng userLocation = LatLng(position.latitude, position.longitude);
-
-      LatLng eventLocation = _parseLocation(widget.event.local);
-
-      double distanceInMeters = _calculateDistance(userLocation, eventLocation);
-
-      if (distanceInMeters <= 50) {
-        await _createFictitiousCheckIn(widget.event.id, userLocation);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Check-in realizado com sucesso!")),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  "Você está a ${distanceInMeters.toStringAsFixed(2)} metros do evento. Aproximar-se!")),
-        );
-      }
+      QuerySnapshot snapshot = await _firestore.collection('Evento').get();
+      return snapshot.docs.map((doc) {
+        return Event.fromFirestore(
+            doc); // Cria um objeto Event a partir do documento
+      }).toList();
     } catch (e) {
-      print("Erro ao obter localização do usuário: $e");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      print("Erro ao buscar eventos: $e");
+      return []; // Retorna uma lista vazia em caso de erro
     }
   }
 
-  LatLng _parseLocation(String locationString) {
-    List<String> parts = locationString.split(',');
-    double latitude = double.parse(parts[0].trim());
-    double longitude = double.parse(parts[1].trim());
-    return LatLng(latitude, longitude);
-  }
-
-  Future<void> _createFictitiousCheckIn(
-      String eventId, LatLng userLocation) async {
-    Map<String, dynamic> fictitiousCheckInData = {
-      'HorarioCheck': DateTime.now().toString(),
-      'StatusCheck': 'Registrado',
-      'LocalizacaoAtualCheck':
-          '${userLocation.latitude}, ${userLocation.longitude}',
-      'idUsu': widget.partiId,
-    };
-
-    await _firestore
-        .collection('Evento')
-        .doc(eventId)
-        .collection('Check-in')
-        .add(fictitiousCheckInData);
-  }
-
-  Future<bool> _checkLocationPermissions() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Serviço de localização desativado!")),
-      );
-      return false;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission != LocationPermission.whileInUse &&
-          permission != LocationPermission.always) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Permissão de localização negada!")),
-        );
-        return false;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Permissão de localização permanentemente negada!")),
-      );
-      return false;
-    }
-
-    return true;
-  }
-
-  double _calculateDistance(LatLng userLocation, LatLng eventLocation) {
-    final Distance distance = Distance();
-    return distance(userLocation, eventLocation);
-  }
-
+  /* Visual */
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.event.nome),
-        backgroundColor: Colors.blueAccent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              height: 30,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.error);
+              },
+            ),
+            const SizedBox(width: 8),
+            const Text('Connect'),
+          ],
         ),
-      ),
-      body: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Adicionando a imagem do evento aqui
-                  Image.network(
-                    widget.event.image, // URL da imagem
-                    fit: BoxFit.cover, // Ajusta a imagem para cobrir o espaço
-                    width: double.infinity, // Largura total
-                    height: 200, // Altura da imagem
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    widget.event.nome,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Data e Hora: ${widget.event.data} ",
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Localização: ${widget.event.local}",
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Status: ${widget.event.status}",
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Descrição:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.event.descricao,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 60),
-                ],
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 100, right: 16.0),
-              child: ElevatedButton(
-                onPressed:
-                    _isLoading ? null : () => _getUserLocationAndCheckIn(),
-                child: const Text('Fazer Check-in'),
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                  backgroundColor: const Color.fromARGB(255, 50, 160, 211),
-                  textStyle: const TextStyle(fontSize: 18),
+        backgroundColor: Colors.blueAccent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_box_sharp),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UserProfilePage(idUsu: widget.idUsu),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.blue[900],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Image.asset(
+                    'assets/banner.png',
+                    height: 250,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.error);
+                    },
+                  ),
+                  const SizedBox(height: 5),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: FutureBuilder<List<Event>>(
+                future: _events,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return const Text("Erro ao carregar eventos");
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Text("Nenhum evento encontrado");
+                  } else {
+                    return SizedBox(
+                      height:
+                          400, // Definir uma altura específica para evitar problemas de scroll
+                      child: GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.75,
+                        children: snapshot.data!.map((event) {
+                          return EventCard(
+                            image: 'assets/event_default.png',
+                            event: event,
+                            idUsu: widget.idUsu,
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/* Visual do CARD */
+class EventCard extends StatelessWidget {
+  final String image;
+  final Event event;
+  final String idUsu;
+
+  const EventCard({
+    required this.image,
+    required this.event,
+    required this.idUsu,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      child: Column(
+        children: [
+          Expanded(
+            child: Image.network(
+              event.image,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.error);
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              event.nome,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MyEventDetailsScreen(
+                    event: event, // O evento deve ser uma instância de Event
+                    partiId:
+                        idUsu, // Certifique-se de que idUsu está corretamente definido
+                  ),
+                ),
+              );
+            },
+            child: const Text('Ver Detalhes'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Modelo Event
+class Event {
+  final String id;
+  final String nome;
+  final String descricao;
+  final String data;
+  final String local;
+  final String status;
+  final String image;
+
+  Event({
+    required this.id,
+    required this.nome,
+    required this.descricao,
+    required this.data,
+    required this.local,
+    required this.status,
+    required this.image,
+  });
+
+  factory Event.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
+    return Event(
+      id: doc.id,
+      nome: data['NomeEvent'] ?? 'Evento sem nome',
+      descricao: data['DescricaoEvent'] ?? 'Sem descrição',
+      data: data['DataHoraEvent'] ?? 'Data não disponível',
+      local: data['LocalizacaoEvent'] ?? 'Local não especificado',
+      status: data['StatusEvent'] ?? 'Status não disponível',
+      image: data['imgEvent'] ?? 'Status não disponível',
     );
   }
 }

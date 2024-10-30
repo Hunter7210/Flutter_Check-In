@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_check_in_events/events_list.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 class MyEventDetailsScreen extends StatefulWidget {
@@ -9,10 +10,10 @@ class MyEventDetailsScreen extends StatefulWidget {
   final String partiId;
 
   const MyEventDetailsScreen({
-    super.key,
+    Key? key,
     required this.event,
     required this.partiId,
-  });
+  }) : super(key: key);
 
   @override
   State<MyEventDetailsScreen> createState() => _MyEventDetailsScreenState();
@@ -21,6 +22,15 @@ class MyEventDetailsScreen extends StatefulWidget {
 class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
+  bool _showMap = false;
+
+  late LatLng eventLocation;
+
+  @override
+  void initState() {
+    super.initState();
+    eventLocation = _parseLocation(widget.event.local);
+  }
 
   Future<void> _getUserLocationAndCheckIn() async {
     if (!await _checkLocationPermissions()) return;
@@ -33,8 +43,6 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       LatLng userLocation = LatLng(position.latitude, position.longitude);
-
-      LatLng eventLocation = _parseLocation(widget.event.local);
 
       double distanceInMeters = _calculateDistance(userLocation, eventLocation);
 
@@ -124,7 +132,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.event.nome),
+        title: Text(widget.event.nome, style: const TextStyle(fontSize: 24)),
         backgroundColor: Colors.blueAccent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -141,48 +149,139 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Adicionando a imagem do evento aqui
-                  Image.network(
-                    widget.event.image, // URL da imagem
-                    fit: BoxFit.cover, // Ajusta a imagem para cobrir o espaço
-                    width: double.infinity, // Largura total
-                    height: 200, // Altura da imagem
+                  // Carrossel com imagem e mapa
+                  Container(
+                    height: 250, // Altura do carrossel
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: PageView(
+                        controller: PageController(
+                          initialPage: _showMap ? 1 : 0,
+                        ),
+                        children: [
+                          // Imagem do evento
+                          Image.network(
+                            widget.event.image,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
+                          // Mapa do evento
+                          FlutterMap(
+                            options: MapOptions(
+                              center: eventLocation,
+                              zoom: 15.0,
+                            ),
+                            children: [
+                              TileLayer(
+                                urlTemplate:
+                                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                subdomains: ['a', 'b', 'c'],
+                              ),
+                              MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    width: 80.0,
+                                    height: 80.0,
+                                    point: eventLocation,
+                                    builder: (ctx) => const Icon(
+                                      Icons.location_on,
+                                      color: Colors.red,
+                                      size: 40.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    widget.event.nome,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Data e Hora: ${widget.event.data} ",
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Localização: ${widget.event.local}",
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Status: ${widget.event.status}",
-                    style: const TextStyle(fontSize: 18),
-                    textAlign: TextAlign.center,
+                  Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.event.nome,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Data: ${widget.event.data}",
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.location_on, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Localização: ${widget.event.local}",
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.info, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Status: ${widget.event.status}",
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
                     "Descrição:",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    widget.event.descricao,
-                    textAlign: TextAlign.center,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      widget.event.descricao,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16),
+                    ),
                   ),
                   const SizedBox(height: 60),
                 ],
@@ -192,17 +291,23 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 100, right: 16.0),
+              padding: const EdgeInsets.only(bottom: 100, right: 16),
               child: ElevatedButton(
-                onPressed:
-                    _isLoading ? null : () => _getUserLocationAndCheckIn(),
-                child: const Text('Fazer Check-in'),
+                onPressed: _isLoading ? null : _getUserLocationAndCheckIn,
                 style: ElevatedButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                  backgroundColor: const Color.fromARGB(255, 50, 160, 211),
+                  backgroundColor: const Color.fromARGB(255, 50, 211, 157),
                   textStyle: const TextStyle(fontSize: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : const Text('Fazer Check-in'),
               ),
             ),
           ),

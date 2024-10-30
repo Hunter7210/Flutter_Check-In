@@ -50,6 +50,7 @@ class _CadastroUsuarioPageState extends State<CadastroUsuarioPage> {
         'NomeUsu': _nomeController.text.trim(),
         'DataNascimentoUsu': _dataNascimentoController.text.trim(),
         'CPFUsu': _cpfController.text.trim(),
+        'EmailUsu': _emailController.text.trim()
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
