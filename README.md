@@ -83,6 +83,11 @@
 | **Testes e Debugging** 🧪  | Testes no emulador e ajustes finais                    | 2 semanas        |
 | **Lançamento e Feedback** 🚀 | Publicação e coleta de feedbacks iniciais              | 1 semana         |
 
+---
+
+### 💻 **Diagrama de Classe**
+
+
 # 📱 Manual do Usuário - Connect Event
 
 Bem-vindo ao **Connect Event**! Este manual irá guiá-lo através das principais funcionalidades do aplicativo, ajudando você a aproveitar ao máximo sua experiência em eventos.
