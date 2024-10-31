@@ -159,7 +159,6 @@ Bem-vindo ao **Connect Event**! Este manual irá guiá-lo através das principai
 
 ---
 
-Toque no ícone do Connect Event para abrir.
 
 		App de Check-In em Eventos com Verificação de Localização
 			(Para alguma pessoa se cadastrar deve estar no local)
