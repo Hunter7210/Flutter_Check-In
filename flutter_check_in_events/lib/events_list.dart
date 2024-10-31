@@ -202,6 +202,7 @@ class Event {
   final String local;
   final String status;
   final String image;
+  final int idadMinima;
 
   Event({
     required this.id,
@@ -211,6 +212,7 @@ class Event {
     required this.local,
     required this.status,
     required this.image,
+    required this.idadMinima,
   });
 
   factory Event.fromFirestore(DocumentSnapshot doc) {
@@ -223,6 +225,7 @@ class Event {
       local: data['LocalizacaoEvent'] ?? 'Local não especificado',
       status: data['StatusEvent'] ?? 'Status não disponível',
       image: data['imgEvent'] ?? 'Status não disponível',
+      idadMinima: int.tryParse(doc['idadMinima'].toString()) ?? 0,
     );
   }
 }

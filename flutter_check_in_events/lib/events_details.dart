@@ -21,7 +21,7 @@ class MyEventDetailsScreen extends StatefulWidget {
 
 class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool _isLoading = false;
+  bool _isCheckingIn = false;
   bool _isInRange = false;
   late LatLng eventLocation;
   List<int> ratings = [];
@@ -36,7 +36,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   Future<void> _getUserLocationAndCheckIn() async {
     if (!await _checkLocationPermissions()) return;
 
-    setState(() => _isLoading = true);
+    setState(() => _isCheckingIn = true);
 
     try {
       Position position = await Geolocator.getCurrentPosition(
@@ -62,7 +62,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
     } catch (e) {
       debugPrint("Erro ao obter localização do usuário: $e");
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _isCheckingIn = false);
     }
   }
 
@@ -303,11 +303,9 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton.icon(
-                onPressed: _isLoading ? null : _getUserLocationAndCheckIn,
-                icon: _isLoading
-                    ? const CircularProgressIndicator()
-                    : const Icon(Icons.check_circle),
-                label: const Text("Check-in"),
+                onPressed: _isCheckingIn ? null : _getUserLocationAndCheckIn,
+                icon: const Icon(Icons.check_circle),
+                label: Text(_isCheckingIn ? "Check-out" : "Check-in"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isInRange ? Colors.green : Colors.red,
                 ),
