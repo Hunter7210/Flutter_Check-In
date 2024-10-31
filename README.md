@@ -93,6 +93,8 @@
 ### 💻 **Diagrama de Uso**
 ![Diagrama de uso](img/diagramaUso.PNG)
 
+---
+
 # 📱 Manual do Usuário - Connect Event
 
 Bem-vindo ao **Connect Event**! Este manual irá guiá-lo através das principais funcionalidades do aplicativo, ajudando você a aproveitar ao máximo sua experiência em eventos.
