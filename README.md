@@ -86,7 +86,7 @@
 ---
 
 ### 💻 **Diagrama de Classe**
-![](img/diagrama de classe connect event.PNG)
+![Diagrama de classe](img/diagramaClasse.PNG)
 
 # 📱 Manual do Usuário - Connect Event
 
