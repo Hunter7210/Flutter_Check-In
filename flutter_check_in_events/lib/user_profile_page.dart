@@ -129,7 +129,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Cargo: ${user.position}',
+                                  'Data de Nascimento: ${user.dataNasc}',
                                   style: const TextStyle(fontSize: 18),
                                 ),
                               ],
@@ -173,7 +173,7 @@ class User {
   final String name;
   final String email;
   final String phone;
-  final String position;
+  final String dataNasc;
   final String profilePictureUrl; // Adicionando URL da imagem do perfil
 
   User({
@@ -181,7 +181,7 @@ class User {
     required this.name,
     required this.email,
     required this.phone,
-    required this.position,
+    required this.dataNasc,
     required this.profilePictureUrl, // Adicionando parâmetro
   });
 
@@ -189,13 +189,13 @@ class User {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return User(
       id: doc.id,
-      name: data['NomeUsu'] ?? 'Nome não disponível',
-      email: data['EmailUsu'] ?? 'Email não disponível',
-      phone: data['CPFUsu'] ?? 'CPF não disponível',
-      position:
+      name: data['NomeUsu'] ?? 'Nome não disponível', // Valor padrão seguro
+      email: data['EmailUsu'] ?? 'Email não disponível', // Valor padrão seguro
+      phone: data['CPFUsu'] ??
+          'CPF não disponível', // Verifique se é o campo correto
+      dataNasc:
           data['DataNascimentoUsu'] ?? 'Data de nascimento não disponível',
-      profilePictureUrl:
-          data['profilePictureUrl'] ?? '', // Adicionando URL da imagem
+      profilePictureUrl: data['profilePictureUrl'] ?? '', // URL padrão seguro
     );
   }
 }

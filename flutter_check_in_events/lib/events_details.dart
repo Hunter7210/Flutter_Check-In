@@ -22,7 +22,7 @@ class MyEventDetailsScreen extends StatefulWidget {
 class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
-  bool _isInRange = false; // Variável para controlar o estado do range
+  bool _isInRange = false;
   late LatLng eventLocation;
   List<int> ratings = [];
 
@@ -36,9 +36,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   Future<void> _getUserLocationAndCheckIn() async {
     if (!await _checkLocationPermissions()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       Position position = await Geolocator.getCurrentPosition(
@@ -46,17 +44,13 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
       LatLng userLocation = LatLng(position.latitude, position.longitude);
       double distanceInMeters = _calculateDistance(userLocation, eventLocation);
 
-      setState(() {
-        _isInRange =
-            distanceInMeters <= 50; // Atualiza o estado baseado na distância
-      });
+      setState(() => _isInRange = distanceInMeters <= 50);
 
       if (_isInRange) {
-        await _createFictitiousCheckIn(widget.event.id, userLocation);
+        await _createCheckIn(widget.event.id, userLocation);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Check-in realizado com sucesso!")),
         );
-
         await _waitForUserToExitRadius(userLocation);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -66,27 +60,21 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
         );
       }
     } catch (e) {
-      print("Erro ao obter localização do usuário: $e");
+      debugPrint("Erro ao obter localização do usuário: $e");
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
   Future<void> _waitForUserToExitRadius(LatLng initialLocation) async {
     while (true) {
       await Future.delayed(const Duration(seconds: 5));
-
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       LatLng userLocation = LatLng(position.latitude, position.longitude);
       double distanceInMeters = _calculateDistance(userLocation, eventLocation);
 
-      setState(() {
-        _isInRange =
-            distanceInMeters <= 50; // Atualiza o estado baseado na distância
-      });
+      setState(() => _isInRange = distanceInMeters <= 50);
 
       if (!_isInRange) {
         _showRatingDialog();
@@ -122,9 +110,9 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                 }),
               ),
               const SizedBox(height: 10),
-              Text("Avaliações:"),
-              for (var rating in ratings)
-                Text("⭐ ${rating.toString()} estrelas"),
+              const Text("Avaliações:"),
+              ...ratings
+                  .map((rating) => Text("⭐ ${rating.toString()} estrelas")),
             ],
           ),
         );
@@ -133,7 +121,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   }
 
   void _saveRating(int rating) async {
-    await FirebaseFirestore.instance
+    await _firestore
         .collection('Evento')
         .doc(widget.event.id)
         .collection('Avaliacoes')
@@ -142,7 +130,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
   }
 
   Future<void> _fetchRatings() async {
-    final snapshot = await FirebaseFirestore.instance
+    final snapshot = await _firestore
         .collection('Evento')
         .doc(widget.event.id)
         .collection('Avaliacoes')
@@ -153,34 +141,27 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
 
   LatLng _parseLocation(String locationString) {
     List<String> parts = locationString.split(',');
-    double latitude = double.parse(parts[0].trim());
-    double longitude = double.parse(parts[1].trim());
-    return LatLng(latitude, longitude);
+    return LatLng(double.parse(parts[0].trim()), double.parse(parts[1].trim()));
   }
 
-  Future<void> _createFictitiousCheckIn(
-      String eventId, LatLng userLocation) async {
-    Map<String, dynamic> fictitiousCheckInData = {
+  Future<void> _createCheckIn(String eventId, LatLng userLocation) async {
+    await _firestore
+        .collection('Evento')
+        .doc(eventId)
+        .collection('Check-in')
+        .add({
       'HorarioCheck': DateTime.now().toString(),
       'StatusCheck': 'Registrado',
       'LocalizacaoAtualCheck':
           '${userLocation.latitude}, ${userLocation.longitude}',
       'idUsu': widget.partiId,
-    };
-
-    await _firestore
-        .collection('Evento')
-        .doc(eventId)
-        .collection('Check-in')
-        .add(fictitiousCheckInData);
+    });
   }
 
   Future<bool> _checkLocationPermissions() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
+    if (!await Geolocator.isLocationServiceEnabled()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Serviço de localização desativado!")),
-      );
+          const SnackBar(content: Text("Serviço de localização desativado!")));
       return false;
     }
 
@@ -190,17 +171,14 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
       if (permission != LocationPermission.whileInUse &&
           permission != LocationPermission.always) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Permissão de localização negada!")),
-        );
+            const SnackBar(content: Text("Permissão de localização negada!")));
         return false;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Permissão de localização permanentemente negada!")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Permissão de localização permanentemente negada!")));
       return false;
     }
 
@@ -220,9 +198,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
         backgroundColor: Colors.blueAccent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Stack(
@@ -233,38 +209,30 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Carrossel com imagem e mapa
                   Container(
                     height: 250,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
+                            color: Colors.black26,
+                            blurRadius: 8,
+                            offset: const Offset(0, 4)),
                       ],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: PageView(
-                        controller: PageController(
-                          initialPage: 0,
-                        ),
+                        controller: PageController(initialPage: 0),
                         children: [
-                          // Imagem do evento
                           Image.network(
                             widget.event.image,
                             fit: BoxFit.cover,
                             width: double.infinity,
                           ),
-                          // Mapa do evento
                           FlutterMap(
-                            options: MapOptions(
-                              center: eventLocation,
-                              zoom: 15.0,
-                            ),
+                            options:
+                                MapOptions(center: eventLocation, zoom: 15.0),
                             children: [
                               TileLayer(
                                 urlTemplate:
@@ -296,8 +264,7 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 10),
                     elevation: 4,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                        borderRadius: BorderRadius.circular(12)),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -306,32 +273,23 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
                           Text(
                             'Nome: ${widget.event.nome}',
                             style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueAccent,
-                            ),
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueAccent),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            'Descrição: ${widget.event.descricao}',
-                            style: const TextStyle(fontSize: 18),
-                          ),
+                          Text('Descrição: ${widget.event.descricao}',
+                              style: const TextStyle(fontSize: 18)),
                           const SizedBox(height: 8),
-                          Text(
-                            'Data e Hora: ${widget.event.data}',
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
+                          Text('Data e Hora: ${widget.event.data}',
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
-                          Text(
-                            'Localização: ${widget.event.local}',
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                          Text('Localização: ${widget.event.local}',
+                              style: const TextStyle(fontSize: 16)),
                           const SizedBox(height: 8),
-                          Text(
-                            'Status: ${widget.event.status}',
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                          Text('Status: ${widget.event.status}',
+                              style: const TextStyle(fontSize: 16)),
                         ],
                       ),
                     ),
@@ -340,7 +298,6 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
               ),
             ),
           ),
-          // Botão de check-in no canto inferior direito
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
@@ -348,19 +305,9 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
               child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : _getUserLocationAndCheckIn,
                 icon: _isLoading
-                    ? const CircularProgressIndicator(
-                        color: Colors.white,
-                      )
+                    ? const CircularProgressIndicator(color: Colors.white)
                     : const Icon(Icons.check),
                 label: const Text("Realizar Check-in"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  backgroundColor:
-                      _isInRange ? Colors.green : Colors.red, // Mudança de cor
-                ),
               ),
             ),
           ),

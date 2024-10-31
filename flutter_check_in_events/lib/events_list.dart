@@ -22,7 +22,7 @@ class _MyListEventsPageState extends State<MyListEventsPage> {
     _events = _fetchEvents(); // Busca os eventos ao inicializar
   }
 
-  /* Metodo para rodar */
+  /* Método para rodar */
   Future<List<Event>> _fetchEvents() async {
     try {
       QuerySnapshot snapshot = await _firestore.collection('Evento').get();
@@ -50,14 +50,17 @@ class _MyListEventsPageState extends State<MyListEventsPage> {
                 return const Icon(Icons.error);
               },
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 25),
             const Text('Connect'),
           ],
         ),
         backgroundColor: Colors.blueAccent,
         actions: [
           IconButton(
-            icon: const Icon(Icons.account_box_sharp),
+            icon: const Icon(
+              Icons.account_circle_sharp,
+              color: Colors.white,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -106,9 +109,8 @@ class _MyListEventsPageState extends State<MyListEventsPage> {
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Text("Nenhum evento encontrado");
                   } else {
-                    return SizedBox(
-                      height:
-                          400, // Definir uma altura específica para evitar problemas de scroll
+                    return Expanded(
+                      // Adicionando Expanded aqui
                       child: GridView.count(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
