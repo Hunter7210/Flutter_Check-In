@@ -75,11 +75,12 @@ flutter:
     - assets/event3.png
     - assets/event4.png
     - assets/fundo.jpg
+    - assets/logo_imagem.png
   
  # Configuração do Flutter Launcher Icons
 flutter_icons:
     android: true
-    image_path: "assets/logo.png" 
+    image_path: "assets/logo_imagem.jpg"
 
   # To add assets to your application, add an assets section, like this:
   # assets:

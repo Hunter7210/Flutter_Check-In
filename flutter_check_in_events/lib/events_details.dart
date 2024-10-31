@@ -305,9 +305,12 @@ class _MyEventDetailsScreenState extends State<MyEventDetailsScreen> {
               child: ElevatedButton.icon(
                 onPressed: _isLoading ? null : _getUserLocationAndCheckIn,
                 icon: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Icon(Icons.check),
-                label: const Text("Realizar Check-in"),
+                    ? const CircularProgressIndicator()
+                    : const Icon(Icons.check_circle),
+                label: const Text("Check-in"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isInRange ? Colors.green : Colors.red,
+                ),
               ),
             ),
           ),
