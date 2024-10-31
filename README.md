@@ -11,7 +11,7 @@
    - **VS Code** 🖥️: Ambiente de desenvolvimento.
    - **Bluestacks 5** 📱: Emulador Android para testes de interface e funcionalidade.
    - **OpenStreetMaps** 🗺️: Para acessar a localização do evento.
-   - **Firebase **🔥: Para acesso ao banco de dados 
+   - **Firebase**🔥: Para acesso ao banco de dados 
 
 ---
 
