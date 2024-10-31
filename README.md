@@ -83,6 +83,83 @@
 | **Testes e Debugging** 🧪  | Testes no emulador e ajustes finais                    | 2 semanas        |
 | **Lançamento e Feedback** 🚀 | Publicação e coleta de feedbacks iniciais              | 1 semana         |
 
+# 📱 Manual do Usuário - Connect Event
+
+Bem-vindo ao **Connect Event**! Este manual irá guiá-lo através das principais funcionalidades do aplicativo, ajudando você a aproveitar ao máximo sua experiência em eventos.
+
+---
+## 🔐 Registro e Autenticação
+
+### Cadastro de Usuários
+
+1. **Abrir o Aplicativo**
+   - Toque no ícone do Connect Event para abrir.
+
+2. **Tela Inicial**
+   - Se você é um novo usuário, clique em "Quero criar uma conta".
+     
+3. **Preencher Formulário**
+   - Insira os seguintes dados:
+     - Nome completo
+     - Data de Nascimento
+     - CPF
+     - E-mail
+     - Senha
+   - Clique em "Registrar Usuario".
+     
+### Login Seguro
+
+1. **Tela Inicial**
+   - Se você é um novo usuário, clique em "Quero criar uma conta".
+     
+2. **Tela de Login**
+   - Digite seu e-mail e senha.
+   - Clique em "Entrar".
+---
+
+## 🌍 Verificação de Localização
+
+### Permissões de Localização
+
+- Ao abrir o aplicativo pela primeira vez, será solicitado que você permita o acesso à sua localização. Clique em "Permitir" para habilitar.
+
+### Geofencing para Check-In
+
+- O aplicativo utiliza geofencing para identificar quando você está próximo do local do evento, ativando automaticamente a opção de check-in.
+
+---
+## 🎟️ Check-In no Evento
+
+1. **Tela de Eventos**
+   - Na tela inicial, você verá uma lista dos eventos disponíveis.
+
+2. **Selecionar Evento**
+   - Toque em "Ver Detalhes" no evento que você deseja participar.
+
+3. **Realizar Check-In**
+   - Quando você estiver dentro do raio definido do evento, o botão de check-in será ativado.
+   - Caso você esteja fora do raio, não será possivel fazer check-in.
+   - Clique em "Check-In" para confirmar sua presença.
+
+---
+## 📳 Avaliação da Experiência
+
+- Ao sair do local do evento, uma tela de avaliação aparecerá automaticamente.
+- Classifique sua experiência de 1 a 5 estrelas.
+- Clique em "Enviar" para registrar sua avaliação.
+
+---
+## 👤 Perfil do Usuário
+
+1. **Acessar Perfil**
+   - Toque no ícone do usuário no canto superior direito.
+
+2. **Ver Dados Pessoais**
+   - Você poderá visualizar suas informações pessoais, como nome, e-mail e senha.
+
+---
+
+Toque no ícone do Connect Event para abrir.
 
 		App de Check-In em Eventos com Verificação de Localização
 			(Para alguma pessoa se cadastrar deve estar no local)
