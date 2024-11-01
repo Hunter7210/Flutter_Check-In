@@ -95,6 +95,12 @@
 
 ---
 
+### 💻 **Diagrama de Fluxo**
+![Diagrama de uso](img/fluxograma.png)
+
+---
+
+
 # 📱 Manual do Usuário - Connect Event
 
 Bem-vindo ao **Connect Event**! Este manual irá guiá-lo através das principais funcionalidades do aplicativo, ajudando você a aproveitar ao máximo sua experiência em eventos.
