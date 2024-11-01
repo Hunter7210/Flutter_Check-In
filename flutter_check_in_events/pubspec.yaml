@@ -40,7 +40,6 @@ dependencies:
   latlong2: ^0.8.1
   flutter_map: ^4.0.0 
   flutter_rating_bar: ^4.0.0  # Para exibir a barra de avaliação por estrelas
- 
 
 
 dev_dependencies:
@@ -54,6 +53,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  mockito: ^5.0.17  # Para simular o Firestore e Geolocator
+  build_runner: ^2.0.0  # Necessário para gerar código ao usar mockito com null safety
+  mocktail: ^0.3.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
